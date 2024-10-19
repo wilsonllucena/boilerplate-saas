@@ -1,17 +1,20 @@
-// Protecting routes with next-auth
-// https://next-auth.js.org/configuration/nextjs#middleware
-// https://nextjs.org/docs/app/building-your-application/routing/middleware
+import { type NextRequest, NextResponse } from 'next/server';
+import { getUrl } from '@/utils/get-url';
 
-import NextAuth from 'next-auth';
-import authConfig from './auth.config';
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get('authjs.session-token');
+  const pathname = request.nextUrl.pathname;
 
-const { auth } = NextAuth(authConfig);
-
-export default auth((req) => {
-  if (!req.auth) {
-    const url = req.url.replace(req.nextUrl.pathname, '/');
-    return Response.redirect(url);
+  if (pathname === '/' && token) {
+    return NextResponse.redirect(new URL(getUrl('/dashboard')));
   }
-});
 
-export const config = { matcher: ['/dashboard/:path*'] };
+  // validar se o existe dashboard na rota
+  if (pathname.startsWith('/dashboard') && !token) {
+    return NextResponse.redirect(new URL(getUrl('/')));
+  }
+}
+
+export const config = {
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
+};
