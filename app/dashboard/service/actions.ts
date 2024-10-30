@@ -1,6 +1,5 @@
 'use server';
 
-import { ServiceRequest } from '@/schemas/service.schema';
 import { api } from '@/trpc/server';
 
 export async function listServices() {
